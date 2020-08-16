@@ -1,0 +1,58 @@
+--- # Setup Centos8 Hosts to become oVirt Hosts - a few things change in terms of how Ansible plays here due to python3, etc.
+- hosts: all
+  connection: ssh
+  remote_user: root # it's a homelab
+  gather_facts: smart
+  tasks:
+
+  - name: update first
+    dnf:
+      name: "*"
+      state: latest
+
+  - name: pre-req packages
+    dnf:
+      name: ['policycoreutils-python-utils', 'python3-policycoreutils.noarch', 'python3-libselinux.x86_64', 'yum-utils', 'vim', 'bind-utils', 'net-tools', 'NetworkManager-tui']
+      state: present
+  
+  - name: selinux permissive  # it's a homelab
+    selinux:
+      policy: targeted
+      state: permissive
+
+  - name: check to see if we need a reboot
+    command: needs-restarting -r
+    register: rebootresult
+    ignore_errors: yes
+
+  - name: reboot if needed
+    reboot:
+    when: rebootresult.rc == 1
+    ignore_errors: yes
+
+  - name: 'install oVirt release 4.4'
+    dnf:
+      name: 'https://resources.ovirt.org/pub/yum-repo/ovirt-release44.rpm'
+      state: present
+
+  - name: install cockpit
+    dnf:
+      name: ['cockpit', 'cockpit-ovirt-dashboard', 'cockpit-storaged', 'cockpit-system', 'cockpit-packagekit']
+      state: present
+
+  - name: enable cockpit service
+    service:
+      name: cockpit
+      enabled: yes
+      state: started
+
+  - name: firewall for cockpit
+    firewalld:
+      service: cockpit
+      permanent: yes
+      state: enabled
+
+  - name: notify
+    debug: msg="Proceed to https://{{inventory_hostname}}:9090 or https://{{ansible_host}}:9090 for the Cockpit user interface to proceed with setting up oVirt."
+# end
+# At this point one can use cockpit OR the CLI to run an engine setup or hosted-engine setup. Might build that in later.
