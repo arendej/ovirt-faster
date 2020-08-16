@@ -1,0 +1,13 @@
+--- # set global ovirt maintenance to none or global.
+##### invoke as `ansible-playbook -i ovirt-hosts.inv global-maint.yml -e 'globalornone=none'` to turn off global maintenance mode
+##### invoke as `ansible-playbook -i ovirt-hosts.inv global-maint.yml -e 'globalornone=global'` to enable global maintenance mode
+- hosts: all
+  connection: ssh
+  remote_user: root # it's a homelab
+  gather_facts: smart
+  vars:
+    globalset: "{{ globalornone }}"
+  tasks:
+  - name: global maintenance off
+    run_once: yes
+    shell: "hosted-engine --set-maintenance --mode={{ globalset }}"
