@@ -1,0 +1,17 @@
+--- # start broker and agent for ovirt
+- hosts: all
+  connection: ssh
+  remote_user: root
+  gather_facts: smart
+  serial: 1 # done in sequence
+  tasks:
+  - name: start broker
+    service:
+      name: ovirt-ha-broker
+      state: started
+      enabled: yes
+  - name: start agent
+    service:
+      name: ovirt-ha-agent
+      state: started
+      enabled: yes
