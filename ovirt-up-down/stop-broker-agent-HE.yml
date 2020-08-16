@@ -5,9 +5,9 @@
   remote_user: root
   tasks:
   - name: stop HE VM
-    shell: hosted-engine --vm-shutdown
+    shell: 'hosted-engine --vm-shutdown'
     run_once: yes
-  - name: Pause for HE VM shutdown
+  - name: Pause for hosted-engine VM shutdown
     pause:
       minutes: 1
       echo: no
@@ -21,3 +21,14 @@
     service:
       name: ovirt-ha-agent
       state: stopped
+  - name: Pause for HE VM shutdown
+    pause:
+      minutes: 1
+      echo: no
+      prompt: "Waiting 1 minute to allow things to settle"
+    run_once: yes
+  - name: disconnect hosted-engine storage
+    shell: 'hosted-engine --disconnect-storage'
+    run_once: yes
+  - name: notify user
+    debug: msg="You may now stop/shut-down the storage server/volumes/etc, and power down the oVirt hypervisor hosts."
