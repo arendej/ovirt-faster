@@ -1,0 +1,23 @@
+--- # stop broker and agent and hosted engine for ovirt
+- hosts: all
+  connection: ssh
+  gather_facts: smart
+  remote_user: root
+  tasks:
+  - name: stop HE VM
+    shell: hosted-engine --vm-shutdown
+    run_once: yes
+  - name: Pause for HE VM shutdown
+    pause:
+      minutes: 1
+      echo: no
+      prompt: "Waiting 1 minute to allow hosted-engine VM to shut down"
+    run_once: yes
+  - name: stop broker
+    service:
+      name: ovirt-ha-broker
+      state: stopped
+  - name: stop agent
+    service:
+      name: ovirt-ha-agent
+      state: stopped
