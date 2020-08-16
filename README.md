@@ -11,11 +11,15 @@ This setup of oVirt assumes:
  until the logic is built in to check for which is happening.
 
 And it can use the following playbooks (so far):
+
 [setup-NFS-storage-node.yml](setup-NFS-storage-node.yml)
+
 [setup-Centos8-hosts.yml](setup-Centos8-hosts.yml)
+
 ~[setup-Centos7-hosts.yml](setup-Centos7-hosts.yml)~
  
 Note: I'm aware this is due to be in the form of an Ansible role and I will make a different branch for that.
+
 
 ## Shutdown/Startup tasks
 
