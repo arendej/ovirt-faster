@@ -1,0 +1,68 @@
+--- # sets up NFS on a CentOS 7 box, to be used as the storage for oVirt. Assumes OS is installed and we have Ansible installed on it.
+- hosts: localhost
+  connection: local
+  user: root # it's a homelab
+  gather_facts: smart
+  tasks:
+  - name: install nfs stuff
+    yum:
+      name: ['nfs-utils', 'rpcbind']
+      state: present
+  - name: nfs service handling
+    service:
+      name: nfs-server
+      enabled: yes
+      state: started
+  - name: make exports file
+    blockinfile:
+      state: present
+      backup: yes
+      create: yes
+      path: /etc/exports
+# now fill in what you need and what matches your case. Note engine is requisite.
+      block: |  
+#        /var/nfs/bigstor        192.168.1.0/24(rw,sync,no_root_squash)
+        /var/nfs/engine         192.168.1.0/24(rw,sync,no_root_squash)
+#        /var/nfs/isos           192.168.1.0/24(rw,sync,no_root_squash)
+#        /var/nfs/mirrd01        192.168.1.0/24(rw,sync,no_root_squash)
+#        /var/nfs/stripe-stor    192.168.1.0/24(rw,sync,no_root_squash)
+  - name: firewalld for NFS services
+    firewalld:
+      zone: public
+      permanent: yes
+      immediate: yes
+      state: enabled
+      service: "{{ item }}"
+    with_items:
+      - nfs
+      - rpc-bind
+      - mountd
+  - name: 'setup kvm and vdsm as 36:36 for oVirt'
+    file:
+      owner: 36
+      group: 36
+      mode: 0755
+      state: directory
+      recurse: yes
+      path: "/var/nfs"
+     # fill in what you need here. Note engine is requisite.
+#    with_items:
+#      - bigstor
+#      - stripe-stor
+#      - mirrd01
+#      - isos
+#      - engine
+  - name: nfs and rpcbind service restarts
+    service:
+      state: restarted
+      name: "{{ item }}"
+      enabled: yes
+    with_items:
+      - nfs-server
+      - rpcbind
+  - name: showmounts
+    shell: showmount -e
+    register: smresult
+  - name: show mounts
+    debug: msg="{{ smresult.stdout_lines }}"
+# end
