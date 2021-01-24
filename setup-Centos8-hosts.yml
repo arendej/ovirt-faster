@@ -34,7 +34,12 @@
     dnf:
       name: 'https://resources.ovirt.org/pub/yum-repo/ovirt-release44.rpm'
       state: present
-
+  
+  - name: install prm of ovirt image to save setup time
+    dnf:
+      name: ovirt-engine-appliance
+      state: present
+      
   - name: install cockpit
     dnf:
       name: ['cockpit', 'cockpit-ovirt-dashboard', 'cockpit-storaged', 'cockpit-system', 'cockpit-packagekit']
